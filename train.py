@@ -2,26 +2,31 @@ from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 import torch
 import matplotlib.pyplot as plt
+import os
+from ray import tune
 
 from utils import *
 from GraphNet import GraphNet
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-### create dataset
-data_list = create_dataset()
-num_data = len(data_list)
-train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32)
-test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32)
-val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
+def train(config, num_cables):
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    ### create dataset
+    data_list = create_dataset(num_features=num_cables)
+    num_data = len(data_list)
+
+    train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32)
+    test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32)
+    val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
 
 
-model = GraphNet(in_features = 1, edge_features=3, hidden_features=32, out_features=3).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
-loss_fn = torch.nn.MSELoss()
+    model = GraphNet(in_features = 1, edge_features=3, hidden_features=config['size'], out_features=3, num_cables=num_cables, num_layers=config['layer']).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], weight_decay=5e-4)
+    loss_fn = torch.nn.MSELoss()
 
-train_bool = False # set to True to train the model
-if train_bool:
+
     diz_loss = {'train_loss': [], 'val_loss': []}
 
     for epoch in range(30):
@@ -54,39 +59,19 @@ if train_bool:
         test_loss= total_loss / total_num
         print('Epoch: {:02d}, Train Loss: {:.4f}, Test Loss: {:.4f}'.format(epoch, train_loss, test_loss))
 
-        diz_loss['train_loss'].append(train_loss)
-        diz_loss['val_loss'].append(test_loss)
-        torch.save(model, 'model/model_{:d}.pth'.format(epoch))
-    np.save('model/train_loss', np.array(diz_loss['train_loss']))
-    np.save('model/val_loss', np.array(diz_loss['val_loss']))
+        with tune.checkpoint_dir(epoch) as checkpoint_dir:
+            print("Saving model at epoch {} to {}".format(epoch, checkpoint_dir))
+            path = os.path.join(checkpoint_dir, "checkpoint")
+            torch.save((model.state_dict(), optimizer.state_dict()), path)
 
-else:
-    # visualize test data and prediction
-    model = torch.load('model/model_29.pth')
+        tune.report(loss=test_loss)
 
-model.eval()
-for data in val_loader:
-    data = data.to(device)
-    out = model(data.x, data.edge_index, data.edge_features)
-    break
+    print("Finished Training")
 
-y = data.y.view(-1,3).cpu().detach().numpy()
-
-fig = plt.figure(figsize=(10,10))
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='o', label='prediction')
-ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', label='target')
-# set axis limits
-ax.set_xlim([0,10])
-ax.set_ylim([0,10])
-ax.set_zlim([0,10])
-ax.legend()
-plt.show()
-
-# plot loss
-train_loss = np.load('model/train_loss.npy')
-val_loss = np.load('model/val_loss.npy')
-plt.plot(train_loss, label='train loss')
-plt.plot(val_loss, label='val loss')
-plt.legend()
-plt.show()
+if __name__ == '__main__':
+    config = {
+        "size": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
+        "lr": tune.loguniform(1e-4, 1e-1),
+        "layer": tune.sample_from(lambda _: np.random.randint(2, 5)),
+    }
+    train(config)
