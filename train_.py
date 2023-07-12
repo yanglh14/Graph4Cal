@@ -9,17 +9,19 @@ from GraphNet import GraphNet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def train():
+def train(num_cables = 8, noise = True):
     ### create save directory
-    num_cables = 9
 
-    save_dir = 'model/model_{}cables'.format(num_cables)
-    save_dir_abs= os.path.join(os.getcwd(), save_dir)
+    save_dir = 'model/model_noise2/model_{}cables_{}'.format(num_cables, 'noise' if noise else 'no_noise')
+    save_dir_abs = os.path.join(os.getcwd(), save_dir)
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
     ### create dataset
-    data_list = create_dataset(num_features=num_cables)
+    if noise:
+        data_list = create_dataset_noise(num_features=num_cables, folder='with_noise_0706/errrange_2')
+    else:
+        data_list = create_dataset(num_features=num_cables, folder = 'with_noise_0706/errrange_2')
     num_data = len(data_list)
 
     train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32)
@@ -31,7 +33,7 @@ def train():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
     loss_fn = torch.nn.MSELoss()
 
-    train_bool = False  # set to True to train the model
+    train_bool = True  # set to True to train the model
 
     if train_bool:
         diz_loss = {'train_loss': [], 'val_loss': []}
@@ -97,7 +99,10 @@ def train():
     ax.set_ylim([0,10])
     ax.set_zlim([0,10])
     ax.legend()
-    plt.show()
+    # save fig
+    plt.savefig(os.path.join(save_dir_abs, 'Eval_{}.png'.format(num_cables)))
 
 if __name__ == '__main__':
-    train()
+    for phase in ['noise', 'no_noise']:
+        for num_cables in range(4, 11):
+            train(num_cables=num_cables, noise=True if phase == 'noise' else False)

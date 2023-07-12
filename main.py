@@ -1,6 +1,7 @@
 from functools import partial
 import numpy as np
 import os
+import pickle
 import torch
 import torch.nn as nn
 from train import train
@@ -9,7 +10,7 @@ from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
 from GraphNet import GraphNet
 
-def main(num_samples=30, max_num_epochs=30, gpus_per_trial=1):
+def main(num_samples=30, max_num_epochs=30, gpus_per_trial=1, num_cables=7):
     config = {
         "size": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
         "lr": tune.loguniform(1e-4, 1e-1),
@@ -27,11 +28,10 @@ def main(num_samples=30, max_num_epochs=30, gpus_per_trial=1):
 
     work_dir = os.path.join(os.getcwd(),"model_finetune")
     os.makedirs(work_dir, exist_ok=True)
-    num_cables = 7
 
     result = tune.run(
         partial(train, num_cables=num_cables),
-        resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
+        resources_per_trial={"cpu": 12, "gpu": gpus_per_trial},
         config=config,
         num_samples=num_samples,
         scheduler=scheduler,
@@ -56,11 +56,22 @@ def main(num_samples=30, max_num_epochs=30, gpus_per_trial=1):
         best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    save_dir = os.path.join(os.getcwd(),"model/model_finetune_{}cables".format(num_cables))
+    save_dir = os.path.join(os.getcwd(),"model/model_finetune")
     os.makedirs(save_dir, exist_ok=True)
     torch.save(best_trained_model.state_dict(), os.path.join(save_dir,"best_model_finetune{}.pth".format(num_cables)))
-    # np.save(os.path.join(save_dir,'/config{}.npy'.format(num_cables)), best_trial.config)
+    print("Best trial model saved at: {}".format(save_dir))
+
+    # using pickle to save best config
+    with open(os.path.join(save_dir,'best_config{}.pkl'.format(num_cables)), 'wb') as f:
+        pickle.dump(best_trial.config, f)
+
+    print("Best trial checkpoint saved at: {}".format(best_checkpoint_dir))
+    # load best config
+    # with open(os.path.join(save_dir,'best_config{}.pkl'.format(num_cables)), 'rb') as f:
+    #     best_config = pickle.load(f)
+    # print(best_config)
 
 if __name__ == "__main__":
     # You can change the number of GPUs per trial here:
-    main(num_samples=100, max_num_epochs=30, gpus_per_trial=1)
+    for i in range(4,11):
+        main(num_samples=100, max_num_epochs=30, gpus_per_trial=1,num_cables=i)

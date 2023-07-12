@@ -26,9 +26,6 @@ def train(config, num_cables):
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], weight_decay=5e-4)
     loss_fn = torch.nn.MSELoss()
 
-
-    diz_loss = {'train_loss': [], 'val_loss': []}
-
     for epoch in range(30):
 
         model.train()
