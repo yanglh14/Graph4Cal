@@ -34,7 +34,7 @@ def create_dataset(num_features=7,folder='c4_c10'):
     # Read data from CSV files
     abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_cdprconf.csv'))
-    feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList.csv'))
+    feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlOriList.csv'))
 
     # Prepare node features (x)
     node_features = torch.tensor(feature_data[:, 6:(6 + num_features)], dtype=torch.float)

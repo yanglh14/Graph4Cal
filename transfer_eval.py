@@ -20,7 +20,6 @@ if not os.path.exists(save_dir):
 
 def train(train_cables=4, eval_cables=5):
 
-
     ### create dataset
     data_list = create_dataset(num_features=eval_cables)
     num_data = len(data_list)
