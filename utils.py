@@ -23,7 +23,7 @@ def read_csv_to_numpy_array(file_path, delimiter=',', skip_header=0):
     data = np.genfromtxt(file_path, delimiter=delimiter, skip_header=skip_header)
     return data
 
-def normalize_tensor(tensor, scale_factor=1000):
+def normalize_tensor(tensor, scale_factor=1):
     return tensor / scale_factor
 
 def create_dataset(num_features=7,folder='c4_c10'):

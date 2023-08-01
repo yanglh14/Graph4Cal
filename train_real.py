@@ -24,13 +24,13 @@ def train(num_cables = 4, noise = True):
         data_list = create_dataset_real(num_features=num_cables, folder = 'exp_data_0717/forGNN',noise = False)
     num_data = len(data_list)
 
-    train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32)
-    test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32)
-    val_loader = DataLoader(data_list[:], batch_size=num_data)
+    train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32,shuffle=True)
+    test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32,shuffle=True)
+    val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
 
 
-    model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=3, num_cables = num_cables, num_layers=2).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
+    model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=2, num_cables = num_cables, num_layers=2).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=5e-4)
     loss_fn = torch.nn.MSELoss()
 
 
@@ -45,7 +45,7 @@ def train(num_cables = 4, noise = True):
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.edge_features)
-            loss = loss_fn(out, data.y.view(-1,3))
+            loss = loss_fn(out, data.y.view(-1,3)[:,:2])
             loss.backward()
             optimizer.step()
 
@@ -59,7 +59,7 @@ def train(num_cables = 4, noise = True):
         for data in test_loader:
             data = data.to(device)
             out = model(data.x, data.edge_index, data.edge_features)
-            loss = loss_fn(out, data.y.view(-1,3))
+            loss = loss_fn(out, data.y.view(-1,3)[:,:2])
 
             total_loss += loss.item() * data.num_graphs
             total_num += data.num_graphs
@@ -78,21 +78,22 @@ def train(num_cables = 4, noise = True):
     for data in val_loader:
         data = data.to(device)
         out = model(data.x, data.edge_index, data.edge_features)
-        loss = loss_fn(out, data.y.view(-1, 3))
+        loss = loss_fn(out, data.y.view(-1, 3)[:,:2])
         print(loss)
+        print(out, data.y.view(-1,3)[:,:2])
         break
 
     y = data.y.view(-1,3).cpu().detach().numpy()
 
     fig = plt.figure(figsize=(10,10))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='o', label='prediction')
-    ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', label='target')
+    ax = fig.add_subplot(111)
+    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), c='r', marker='o', label='prediction')
+    ax.scatter(y[:,0], y[:,1], c='g', marker='o', label='target')
     # set axis limits
-    ax.set_xlim([0,1])
-    ax.set_ylim([0,1])
-    ax.set_zlim([0,1])
+    ax.set_xlim([0,1000])
+    ax.set_ylim([0,1000])
     ax.legend()
+    plt.grid()
     # save fig
     plt.savefig(os.path.join(save_dir_abs, 'Eval_{}.png'.format(num_cables)))
     plt.close()

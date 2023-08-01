@@ -24,8 +24,8 @@ def train(num_cables = 8, noise = True):
         data_list = create_dataset(num_features=num_cables, folder = 'sim_data_from_hit_cdpr/xlim_200_800_ylim_200_800/c4_euler_zlim-15  15deg')
     num_data = len(data_list)
 
-    train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32)
-    test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32)
+    train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32,shuffle=True)
+    test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32,shuffle=True)
     val_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=100)
 
     model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=2, num_cables = num_cables, num_layers=2).to(device)
