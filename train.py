@@ -34,50 +34,45 @@ def train(num_cables = 8, noise = True):
 
     train_bool = True  # set to True to train the model
 
-    if train_bool:
-        diz_loss = {'train_loss': [], 'val_loss': []}
+    diz_loss = {'train_loss': [], 'val_loss': []}
 
-        for epoch in range(30):
+    for epoch in range(30):
 
-            model.train()
-            total_loss = 0
-            total_num = 0
-            for data in train_loader:
-                data = data.to(device)
-                optimizer.zero_grad()
-                out = model(data.x, data.edge_index, data.edge_features)
-                loss = loss_fn(out, data.y.view(-1,3)[:,:2])
-                loss.backward()
-                optimizer.step()
+        model.train()
+        total_loss = 0
+        total_num = 0
+        for data in train_loader:
+            data = data.to(device)
+            optimizer.zero_grad()
+            out = model(data.x, data.edge_index, data.edge_features)
+            loss = loss_fn(out, data.y.view(-1,3)[:,:2])
+            loss.backward()
+            optimizer.step()
 
-                total_loss += loss.item() * data.num_graphs
-                total_num += data.num_graphs
-            train_loss= total_loss / total_num
+            total_loss += loss.item() * data.num_graphs
+            total_num += data.num_graphs
+        train_loss= total_loss / total_num
 
-            model.eval()
-            total_loss = 0
-            total_num = 0
-            for data in test_loader:
-                data = data.to(device)
-                out = model(data.x, data.edge_index, data.edge_features)
-                loss = loss_fn(out, data.y.view(-1,3)[:,:2])
+        model.eval()
+        total_loss = 0
+        total_num = 0
+        for data in test_loader:
+            data = data.to(device)
+            out = model(data.x, data.edge_index, data.edge_features)
+            loss = loss_fn(out, data.y.view(-1,3)[:,:2])
 
-                total_loss += loss.item() * data.num_graphs
-                total_num += data.num_graphs
-            test_loss= total_loss / total_num
-            print('Epoch: {:02d}, Train Loss: {:.4f}, Test Loss: {:.4f}'.format(epoch, train_loss, test_loss))
+            total_loss += loss.item() * data.num_graphs
+            total_num += data.num_graphs
+        test_loss= total_loss / total_num
+        print('Epoch: {:02d}, Train Loss: {:.4f}, Test Loss: {:.4f}'.format(epoch, train_loss, test_loss))
 
-            diz_loss['train_loss'].append(train_loss)
-            diz_loss['val_loss'].append(test_loss)
-            torch.save(model.state_dict(),  os.path.join(save_dir_abs, 'model_{:d}.pth'.format(epoch)))
+        diz_loss['train_loss'].append(train_loss)
+        diz_loss['val_loss'].append(test_loss)
+        torch.save(model.state_dict(),  os.path.join(save_dir_abs, 'model_{:d}.pth'.format(epoch)))
 
-        np.save(os.path.join(save_dir_abs, 'train_loss'), np.array(diz_loss['train_loss']))
-        np.save(os.path.join(save_dir_abs, 'val_loss'), np.array(diz_loss['val_loss']))
+    np.save(os.path.join(save_dir_abs, 'train_loss'), np.array(diz_loss['train_loss']))
+    np.save(os.path.join(save_dir_abs, 'val_loss'), np.array(diz_loss['val_loss']))
 
-    else:
-        # visualize test data and prediction
-        model.load_state_dict(torch.load(os.path.join('model/model_finetune_7cables', 'best_model_finetune7.pth')))
-        # model.load_state_dict(torch.load(os.path.join('model/model_9cables', 'model_29.pth')))
 
     model.eval()
     for data in val_loader:

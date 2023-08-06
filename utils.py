@@ -24,7 +24,14 @@ def read_csv_to_numpy_array(file_path, delimiter=',', skip_header=0):
     return data
 
 def normalize_tensor(tensor, scale_factor=1):
-    return tensor / scale_factor
+    #do batch normalization
+    # tensor = tensor - tensor.mean(dim=0)
+    # # check for std = 0
+    # std = tensor.std(dim=0)
+    # std[std == 0] = 1
+    # tensor = tensor / std
+
+    return tensor/scale_factor
 
 def create_dataset(num_features=7,folder='c4_c10'):
     # Choose the correct data folder based on num_features
@@ -45,7 +52,7 @@ def create_dataset(num_features=7,folder='c4_c10'):
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, :3], dtype=torch.float)
-    target_values = normalize_tensor(target_values)
+    target_values = normalize_tensor(target_values,1000)
 
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
@@ -325,7 +332,7 @@ def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, :3], dtype=torch.float)
-    target_values = normalize_tensor(target_values)
+    target_values = normalize_tensor(target_values,1000)
 
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
