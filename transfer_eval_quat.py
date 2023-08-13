@@ -11,7 +11,7 @@ from GraphNet import GraphNet
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ### create save directory
-save_dir = 'model/transfer_results_quat'
+save_dir = 'model/model_quat/transfer_results'
 save_dir_abs = os.path.join(os.getcwd(), save_dir)
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
@@ -25,12 +25,12 @@ def train(train_cables=4, eval_cables=5):
 
     train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32)
     test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32)
-    val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
+    val_loader = DataLoader(data_list[num_data-100:], batch_size=1)
 
 
     model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=4, num_cables = eval_cables, num_layers=2).to(device)
 
-    model.load_state_dict(torch.load('model/model_clean_quat/model_{}cables_{}/model_29.pth'.format(train_cables,'no_noise')))
+    model.load_state_dict(torch.load('model/model_quat/model_{}cables/model_99.pth'.format(train_cables)))
 
     loss_fn = compute_quaternion_difference
 
@@ -47,7 +47,56 @@ def train(train_cables=4, eval_cables=5):
     test_loss= total_loss / total_num
     print('Test Loss: {:.4f}'.format(test_loss))
 
-    return test_loss
+    model.eval()
+    for data in val_loader:
+        data = data.to(device)
+        out = model(data.x, data.edge_index, data.edge_features)
+        loss = loss_fn(out, data.y.view(-1,4))
+        print(loss)
+        break
+
+    ground_truth_quaternions = data.y.view(-1, 4).cpu().detach().numpy()
+    predicted_quaternions = out.cpu().detach().numpy()
+
+    batch_size = ground_truth_quaternions.shape[0]
+
+    ground_truth_quaternion = ground_truth_quaternions[0]
+    predicted_quaternion = predicted_quaternions[0]
+
+    # Visualize the orientations in a 3D matplotlib figure
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot the ground truth orientation
+    ax.quiver(0, 0, 0, *ground_truth_quaternion[1:], color='blue', label='Ground Truth')
+
+    # Plot the predicted orientation
+    ax.quiver(0, 0, 0, *predicted_quaternion[1:], color='red', label='Predicted')
+
+    # Set labels and legend
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+    plt.savefig(os.path.join(save_dir_abs, 'Eval_{}_to_{}_loss{}.png'.format(train_cables, eval_cables, loss)))
+    plt.close()
+
+
+def quaternion_to_rpy_batch(quaternions):
+    """
+    Convert a batch of quaternions to corresponding batch of Roll-Pitch-Yaw (RPY) angles.
+
+    Args:
+        quaternions (numpy array): Input batch of quaternions in the format [batch_size, w, x, y, z].
+
+    Returns:
+        numpy array: Batch of RPY angles in radians [batch_size, roll, pitch, yaw].
+    """
+    w, x, y, z = np.split(quaternions, 4, axis=-1)
+    roll = np.arctan2(2 * (w * x + y * z), 1 - 2 * (x ** 2 + y ** 2))
+    pitch = np.arcsin(2 * (w * y - z * x))
+    yaw = np.arctan2(2 * (w * z + x * y), 1 - 2 * (y ** 2 + z ** 2))
+    return np.concatenate([roll, pitch, yaw], axis=-1)
 
 if __name__ == '__main__':
     test_loss_list = np.zeros((11,11))
@@ -98,5 +147,5 @@ if __name__ == '__main__':
 
     # Save the table as a PNG image
     plt.show()
-    plt.savefig(os.path.join(save_dir_abs, 'table.png'))
+    plt.savefig(os.path.join(save_dir_abs, 'table'))
     plt.close()

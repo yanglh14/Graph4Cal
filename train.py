@@ -9,34 +9,31 @@ from GraphNet import GraphNet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def train(num_cables = 8, noise = True):
+def train(num_cables = 8):
     ### create save directory
 
-    save_dir = 'model/model_sim2real/model_{}cables_{}_200-800'.format(num_cables, 'noise' if noise else 'no_noise')
+    save_dir = 'model/model_transfer_cfg/model_{}cables'.format(num_cables)
     save_dir_abs = os.path.join(os.getcwd(), save_dir)
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
     ### create dataset
-    if noise:
-        data_list = create_dataset_noise(num_features=num_cables, folder='sim_data_from_hit_cdpr/xlim_100_900_ylim_100_900/c4_euler_zlim-15  15deg')
-    else:
-        data_list = create_dataset(num_features=num_cables, folder = 'sim_data_from_hit_cdpr/xlim_200_800_ylim_200_800/c4_euler_zlim-15  15deg')
+
+    data_list = create_dataset(num_features=num_cables, folder = 'c4_c10')
+
     num_data = len(data_list)
 
     train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32,shuffle=True)
     test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32,shuffle=True)
-    val_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=100)
+    val_loader = DataLoader(data_list[int(num_data-100):], batch_size=100)
 
-    model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=2, num_cables = num_cables, num_layers=2).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=5e-4)
+    model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=3, num_cables = num_cables, num_layers=2).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5, weight_decay=5e-4)
     loss_fn = torch.nn.MSELoss()
-
-    train_bool = True  # set to True to train the model
 
     diz_loss = {'train_loss': [], 'val_loss': []}
 
-    for epoch in range(30):
+    for epoch in range(100):
 
         model.train()
         total_loss = 0
@@ -45,7 +42,7 @@ def train(num_cables = 8, noise = True):
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.edge_features)
-            loss = loss_fn(out, data.y.view(-1,3)[:,:2])
+            loss = torch.sqrt(loss_fn(out, data.y.view(-1,3)))
             loss.backward()
             optimizer.step()
 
@@ -59,7 +56,7 @@ def train(num_cables = 8, noise = True):
         for data in test_loader:
             data = data.to(device)
             out = model(data.x, data.edge_index, data.edge_features)
-            loss = loss_fn(out, data.y.view(-1,3)[:,:2])
+            loss = torch.sqrt(loss_fn(out, data.y.view(-1,3)))
 
             total_loss += loss.item() * data.num_graphs
             total_num += data.num_graphs
@@ -78,7 +75,7 @@ def train(num_cables = 8, noise = True):
     for data in val_loader:
         data = data.to(device)
         out = model(data.x, data.edge_index, data.edge_features)
-        loss = loss_fn(out, data.y.view(-1, 3)[:,:2])
+        loss = torch.sqrt(loss_fn(out, data.y.view(-1, 3)))
         print(loss)
         break
 
@@ -100,6 +97,5 @@ def train(num_cables = 8, noise = True):
     plt.close()
 
 if __name__ == '__main__':
-    for phase in ['no_noise']:
-        for num_cables in range(4, 5):
-            train(num_cables=num_cables, noise=True if phase == 'noise' else False)
+    for num_cables in range(4, 11):
+        train(num_cables=num_cables)

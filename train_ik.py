@@ -30,13 +30,13 @@ def train(num_cables = 8, noise = False):
 
 
     model = GraphNet(in_features = 3, edge_features=3, hidden_features=64, out_features=1, num_cables = num_cables, num_layers=2).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5, weight_decay=5e-4)
     loss_fn = torch.nn.MSELoss()
 
 
     diz_loss = {'train_loss': [], 'val_loss': []}
 
-    for epoch in range(30):
+    for epoch in range(100):
 
         model.train()
         total_loss = 0
@@ -45,7 +45,7 @@ def train(num_cables = 8, noise = False):
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.edge_features)
-            loss = loss_fn(out, data.y.view(-1,num_cables))
+            loss = torch.sqrt(loss_fn(out, data.y.view(-1,num_cables)))
             loss.backward()
             optimizer.step()
 
@@ -59,7 +59,7 @@ def train(num_cables = 8, noise = False):
         for data in test_loader:
             data = data.to(device)
             out = model(data.x, data.edge_index, data.edge_features)
-            loss = loss_fn(out, data.y.view(-1,num_cables))
+            loss = torch.sqrt(loss_fn(out, data.y.view(-1,num_cables)))
 
             total_loss += loss.item() * data.num_graphs
             total_num += data.num_graphs

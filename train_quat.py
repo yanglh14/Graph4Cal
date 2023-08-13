@@ -9,10 +9,10 @@ from GraphNet import GraphNet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def train(num_cables = 8, noise = False):
+def train(num_cables = 8):
     ### create save directory
 
-    save_dir = 'model/model_clean_quat/model_{}cables_{}'.format(num_cables, 'noise' if noise else 'no_noise')
+    save_dir = 'model/model_quat/model_{}cables'.format(num_cables)
     save_dir_abs = os.path.join(os.getcwd(), save_dir)
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
@@ -34,7 +34,7 @@ def train(num_cables = 8, noise = False):
 
     diz_loss = {'train_loss': [], 'val_loss': []}
 
-    for epoch in range(30):
+    for epoch in range(100):
 
         model.train()
         total_loss = 0
@@ -72,6 +72,5 @@ def train(num_cables = 8, noise = False):
     np.save(os.path.join(save_dir_abs, 'val_loss'), np.array(diz_loss['val_loss']))
 
 if __name__ == '__main__':
-    for phase in ['no_noise']:
-        for num_cables in range(4, 11):
-            train(num_cables=num_cables, noise=True if phase == 'noise' else False)
+    for num_cables in range(4, 11):
+        train(num_cables=num_cables)

@@ -23,13 +23,14 @@ def read_csv_to_numpy_array(file_path, delimiter=',', skip_header=0):
     data = np.genfromtxt(file_path, delimiter=delimiter, skip_header=skip_header)
     return data
 
-def normalize_tensor(tensor, scale_factor=1):
+def normalize_tensor(tensor, scale_factor=1, batch_norm=False):
     #do batch normalization
-    # tensor = tensor - tensor.mean(dim=0)
-    # # check for std = 0
-    # std = tensor.std(dim=0)
-    # std[std == 0] = 1
-    # tensor = tensor / std
+    if batch_norm:
+        tensor = tensor - tensor.mean(dim=0)
+        # check for std = 0
+        std = tensor.std(dim=0)
+        std[std == 0] = 1
+        tensor = tensor / std
 
     return tensor/scale_factor
 
@@ -41,14 +42,14 @@ def create_dataset(num_features=7,folder='c4_c10'):
     # Read data from CSV files
     abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_cdprconf.csv'))
-    feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlOriList.csv'))
+    feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList.csv'))
 
     # Prepare node features (x)
     node_features = torch.tensor(feature_data[:, 6:(6 + num_features)], dtype=torch.float)
     node_features = torch.cat([torch.zeros(node_features.shape[0], 1),
                                node_features,
                                torch.zeros(node_features.shape[0], 1)], dim=1)
-    node_features = normalize_tensor(node_features)
+    node_features = normalize_tensor(node_features,1000,batch_norm=False)
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, :3], dtype=torch.float)
@@ -57,7 +58,7 @@ def create_dataset(num_features=7,folder='c4_c10'):
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
     edge_features = torch.cat([edge_features[::2], edge_features[1::2]], dim=0).view(2, -1, 3)
-    edge_features = normalize_tensor(edge_features)
+    edge_features = normalize_tensor(edge_features,1000,batch_norm=False)
 
     # Prepare edge indices
     edge_index1 = torch.tensor([[0] * num_features,
@@ -80,7 +81,7 @@ def create_dataset(num_features=7,folder='c4_c10'):
 
     return data_list
 
-def create_dataset_noise(num_features=7,folder = 'with_noise_0706/errrange_2'):
+def create_dataset_noise(num_features=7,folder = 'with_noise_0706/errrange_2', noise = True):
     # Choose the correct data folder based on num_features
 
     data_path = 'c{}_data/c{}'.format(num_features,num_features)
@@ -92,20 +93,27 @@ def create_dataset_noise(num_features=7,folder = 'with_noise_0706/errrange_2'):
     feature_data_noise = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList_noise.csv'))
 
     # Prepare node features (x)
-    node_features = torch.tensor(feature_data_noise[:, 6:(6 + num_features)], dtype=torch.float)
-    node_features = torch.cat([torch.zeros(node_features.shape[0], 1),
-                               node_features,
-                               torch.zeros(node_features.shape[0], 1)], dim=1)
-    node_features = normalize_tensor(node_features)
+    if noise:
+        node_features = torch.tensor(feature_data_noise[:, 6:(6 + num_features)], dtype=torch.float)
+        node_features = torch.cat([torch.zeros(node_features.shape[0], 1),
+                                   node_features,
+                                   torch.zeros(node_features.shape[0], 1)], dim=1)
+    else:
+        node_features = torch.tensor(feature_data[:, 6:(6 + num_features)], dtype=torch.float)
+        node_features = torch.cat([torch.zeros(node_features.shape[0], 1),
+                                   node_features,
+                                   torch.zeros(node_features.shape[0], 1)], dim=1)
+
+    node_features = normalize_tensor(node_features,1000,batch_norm=False)
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, :3], dtype=torch.float)
-    target_values = normalize_tensor(target_values)
+    target_values = normalize_tensor(target_values,1000,batch_norm=False)
 
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
     edge_features = torch.cat([edge_features[::2], edge_features[1::2]], dim=0).view(2, -1, 3)
-    edge_features = normalize_tensor(edge_features)
+    edge_features = normalize_tensor(edge_features,1000,batch_norm=False)
 
     # Prepare edge indices
     edge_index1 = torch.tensor([[0] * num_features,
@@ -146,17 +154,17 @@ def create_dataset_ik(num_features=7,folder='c4_c10'):
                                node_features.view(-1,1,3),
                                ], dim=1)
 
-    node_features = normalize_tensor(node_features)
+    node_features = normalize_tensor(node_features,1000,batch_norm=False)
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, 6:(6 + num_features)], dtype=torch.float)
 
-    target_values = normalize_tensor(target_values)
+    target_values = normalize_tensor(target_values,1000,batch_norm=False)
 
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
     edge_features = torch.cat([edge_features[::2], edge_features[1::2]], dim=0).view(2, -1, 3)
-    edge_features = normalize_tensor(edge_features)
+    edge_features = normalize_tensor(edge_features,1000,batch_norm=False)
 
     # Prepare edge indices
     edge_index1 = torch.tensor([[0] * num_features,
@@ -200,17 +208,17 @@ def create_dataset_ik_noise(num_features=7,folder='c4_c10'):
                                node_features.view(-1,1,3),
                                ], dim=1)
 
-    node_features = normalize_tensor(node_features)
+    node_features = normalize_tensor(node_features,1000,batch_norm=False)
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, 6:(6 + num_features)], dtype=torch.float)
 
-    target_values = normalize_tensor(target_values)
+    target_values = normalize_tensor(target_values,1000,batch_norm=False)
 
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
     edge_features = torch.cat([edge_features[::2], edge_features[1::2]], dim=0).view(2, -1, 3)
-    edge_features = normalize_tensor(edge_features)
+    edge_features = normalize_tensor(edge_features,1000,batch_norm=False)
 
     # Prepare edge indices
     edge_index1 = torch.tensor([[0] * num_features,
@@ -248,7 +256,7 @@ def create_dataset_quat(num_features=7,folder='varying_ori_0715'):
     node_features = torch.cat([torch.zeros(node_features.shape[0], 1),
                                node_features,
                                torch.zeros(node_features.shape[0], 1)], dim=1)
-    node_features = normalize_tensor(node_features)
+    node_features = normalize_tensor(node_features,1000,batch_norm=False)
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, 3:7], dtype=torch.float)
@@ -256,7 +264,7 @@ def create_dataset_quat(num_features=7,folder='varying_ori_0715'):
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
     edge_features = torch.cat([edge_features[::2], edge_features[1::2]], dim=0).view(2, -1, 3)
-    edge_features = normalize_tensor(edge_features)
+    edge_features = normalize_tensor(edge_features,1000,batch_norm=False)
 
     # Prepare edge indices
     edge_index1 = torch.tensor([[0] * num_features,

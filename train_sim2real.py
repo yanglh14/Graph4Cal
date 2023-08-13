@@ -28,12 +28,12 @@ def train(num_cables = 8, folder_name = 'c4_euler_zlim-15  15deg', model_dir = '
     val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
 
     model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=2, num_cables = num_cables, num_layers=2).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5, weight_decay=5e-4)
     loss_fn = torch.nn.MSELoss()
 
     diz_loss = {'train_loss': [], 'val_loss': []}
 
-    for epoch in range(30):
+    for epoch in range(100):
 
         model.train()
         total_loss = 0

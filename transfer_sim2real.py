@@ -23,9 +23,9 @@ def train(num_cables,model_name):
 
     model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=2, num_cables = num_cables, num_layers=2).to(device)
 
-    model.load_state_dict(torch.load(os.path.join('model/model_sim2real/'+model_name, 'model_29.pth')))
+    model.load_state_dict(torch.load(os.path.join('model/model_sim2real/'+model_name, 'model_99.pth')))
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5, weight_decay=5e-4)
     loss_fn = torch.nn.MSELoss()
 
     diz_loss = {'train_loss': [], 'val_loss': []}

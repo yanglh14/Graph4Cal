@@ -10,10 +10,9 @@ from GraphNet import GraphNet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-finetune_bool = False  # set to True if finetune model
 
 ### create save directory
-save_dir = 'model/transfer_results_finetune' if finetune_bool else 'model/transfer_results'
+save_dir = 'model/model_transfer_cfg/transfer_eval'
 save_dir_abs = os.path.join(os.getcwd(), save_dir)
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
@@ -21,28 +20,17 @@ if not os.path.exists(save_dir):
 def train(train_cables=4, eval_cables=5):
 
     ### create dataset
-    data_list = create_dataset(num_features=eval_cables)
+    data_list = create_dataset(num_features=eval_cables, folder = 'c4_c10')
     num_data = len(data_list)
 
     train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32)
     test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32)
     val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
 
-    if finetune_bool:
-        with open(os.path.join('model/model_finetune','best_config{}.pkl'.format(train_cables)), 'rb') as f:
-            config = pickle.load(f)
 
-        model = GraphNet(in_features=1, edge_features=3, hidden_features=config['size'], out_features=3,
-                         num_cables=eval_cables, num_layers=config['layer']).to(device)
+    model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=3, num_cables = eval_cables, num_layers=2).to(device)
 
-        model.load_state_dict(
-            torch.load(os.path.join('model/model_finetune', 'best_model_finetune{}.pth'.format(train_cables))))
-
-
-    else:
-        model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=3, num_cables = eval_cables, num_layers=2).to(device)
-
-        model.load_state_dict(torch.load(os.path.join('model/model_{}cables'.format(train_cables), 'model_29.pth')))
+    model.load_state_dict(torch.load(os.path.join('model/model_transfer_cfg/model_{}cables'.format(train_cables), 'model_99.pth')))
 
     loss_fn = torch.nn.MSELoss()
 
@@ -52,7 +40,7 @@ def train(train_cables=4, eval_cables=5):
     for data in test_loader:
         data = data.to(device)
         out = model(data.x, data.edge_index, data.edge_features)
-        loss = loss_fn(out, data.y.view(-1,3))
+        loss = torch.sqrt(loss_fn(out, data.y.view(-1, 3)))
 
         total_loss += loss.item() * data.num_graphs
         total_num += data.num_graphs
@@ -62,7 +50,7 @@ def train(train_cables=4, eval_cables=5):
     for data in val_loader:
         data = data.to(device)
         out = model(data.x, data.edge_index, data.edge_features)
-        loss = loss_fn(out, data.y.view(-1, 3))
+        loss = torch.sqrt(loss_fn(out, data.y.view(-1, 3)))
         print(loss)
         break
 
@@ -73,9 +61,9 @@ def train(train_cables=4, eval_cables=5):
     ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='o', label='prediction')
     ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', label='target')
     # set axis limits
-    ax.set_xlim([0,10])
-    ax.set_ylim([0,10])
-    ax.set_zlim([0,10])
+    ax.set_xlim([0,1])
+    ax.set_ylim([0,1])
+    ax.set_zlim([0,1])
     ax.legend()
     # save fig
     plt.savefig(os.path.join(save_dir_abs, 'Eval_{}_to_{}.png'.format(train_cables, eval_cables)))
