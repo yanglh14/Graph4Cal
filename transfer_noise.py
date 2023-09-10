@@ -7,17 +7,17 @@ from GraphNet import GraphNet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-save_dir = 'model/model_noise2/transfer_results'
+save_dir = 'model/model_noise5/transfer_results'
 save_dir_abs = os.path.join(os.getcwd(), save_dir)
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
 
 def train(num_cables):
-    data_list = create_dataset_noise(num_features=num_cables, folder='with_noise_0706/errrange_2/', noise=True)
+    data_list = create_dataset_noise(num_features=num_cables, folder='with_noise_0706/errrange_5/', noise=True)
 
     num_data = len(data_list)
 
-    train_loader = DataLoader(data_list[:int(num_data*0.8)], batch_size=32, shuffle=True)
+    train_loader = DataLoader(data_list[:1000], batch_size=32, shuffle=True)
     test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32, shuffle=True)
     val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
 
@@ -108,7 +108,9 @@ if __name__ == '__main__':
     for i in range(4,11):
 
         test_loss_array[i,1],test_loss_array[i,2] = train(num_cables=i)
-        test_loss_array[i,0],test_loss_array[i,3] = np.load(os.path.join('model/model_noise2/model_{}cables_no_noise'.format(i), 'val_loss.npy'))[-1], np.load(os.path.join('model/model_noise2/model_{}cables_noise'.format(i), 'val_loss.npy'))[-1]
+        test_loss_array[i,0],test_loss_array[i,3] = \
+            np.load(os.path.join('model/model_noise5/model_{}cables_no_noise'.format(i), 'val_loss.npy'))[-1], \
+            np.load(os.path.join('model/model_noise5/model_{}cables_noise'.format(i), 'val_loss.npy'))[-1]
 
     np.save(os.path.join(save_dir_abs, 'test_loss.npy'), test_loss_array)
 
