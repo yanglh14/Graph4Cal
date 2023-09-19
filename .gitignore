@@ -1,3 +1,5 @@
 model_finetune/
 __pycache__/
-model_old/
+model_v1/
+model_v2/
+

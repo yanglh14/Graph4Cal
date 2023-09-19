@@ -1,18 +1,14 @@
-from torch_geometric.data import Data
-from torch_geometric.loader import DataLoader
-import torch
 import matplotlib.pyplot as plt
-import os
 
-from utils import *
-from GraphNet import GraphNet
+from utils.utils import *
+from utils.GraphNet import GraphNet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def train(num_cables = 8):
     ### create save directory
 
-    save_dir = 'model/model_transfer_cfg/model_{}cables'.format(num_cables)
+    save_dir = 'model/exp1-cfgs/NoScale_LR1e-4_Scheduler/model_{}cables'.format(num_cables)
     save_dir_abs = os.path.join(os.getcwd(), save_dir)
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
@@ -29,6 +25,9 @@ def train(num_cables = 8):
 
     model = GraphNet(in_features = 1, edge_features=3, hidden_features=64, out_features=3, num_cables = num_cables, num_layers=2).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-5, weight_decay=5e-4)
+    schedulers = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.8,
+                                                                    patience=3, verbose=True)
+
     loss_fn = torch.nn.MSELoss()
 
     diz_loss = {'train_loss': [], 'val_loss': []}
@@ -61,6 +60,7 @@ def train(num_cables = 8):
             total_loss += loss.item() * data.num_graphs
             total_num += data.num_graphs
         test_loss= total_loss / total_num
+        schedulers.step(test_loss) # update learning rate scheduler
         print('Epoch: {:02d}, Train Loss: {:.4f}, Test Loss: {:.4f}'.format(epoch, train_loss, test_loss))
 
         diz_loss['train_loss'].append(train_loss)
@@ -70,7 +70,13 @@ def train(num_cables = 8):
     np.save(os.path.join(save_dir_abs, 'train_loss'), np.array(diz_loss['train_loss']))
     np.save(os.path.join(save_dir_abs, 'val_loss'), np.array(diz_loss['val_loss']))
 
+    #plot the val loss and save figure
+    val_loss = np.array(diz_loss['val_loss'])
+    plt.plot(val_loss)
+    plt.savefig(os.path.join(save_dir_abs, 'val_loss.png'))
+    plt.close()
 
+    # visualize the prediction for last trajectory
     model.eval()
     for data in val_loader:
         data = data.to(device)

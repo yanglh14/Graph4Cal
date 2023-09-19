@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
 import os
-import pickle
 
-from utils import *
-from GraphNet_ik import GraphNet
+from utils.GraphNet_ik import GraphNet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
