@@ -7,7 +7,7 @@ import os
 import pickle
 import torch
 import torch.nn as nn
-from train_finetune import train
+from exp1_train_finetune import train
 from ray import tune
 from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
