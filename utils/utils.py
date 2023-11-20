@@ -43,7 +43,7 @@ def create_dataset(num_features=7,folder='c4_c10'):
     data_path = 'c{}_data/c{}'.format(num_features,num_features)
 
     # Read data from CSV files
-    abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
+    abs_data_path = os.path.join('../Graph4Cal', 'data')
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_cdprconf.csv'))
     feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList.csv'))
 
