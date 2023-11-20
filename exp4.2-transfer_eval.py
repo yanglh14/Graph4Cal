@@ -91,15 +91,23 @@ def train(train_cables=4):
 
     fig = plt.figure(figsize=(10,10))
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='o', label='prediction')
-    ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', label='target')
+    # ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='o', label='prediction')
+    # ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', label='target')
+    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='.', s=10, label='KmGNN')
+    ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', s=5, label='Reference')
     # set axis limits
     ax.set_xlim([0,1])
     ax.set_ylim([0,1])
     ax.set_zlim([0,1])
-    ax.legend()
+    ax.legend(fontsize=25)
+    ax.set_xlabel('x (m)', fontsize=25)
+    ax.set_ylabel('y (m)', fontsize=25)
+    ax.set_zlabel('z (m)', fontsize=25)
+    ax.view_init(90,-90) #elev=20, azim=-160
+    plt.tight_layout()
     # save fig
-    plt.savefig(os.path.join(save_dir_abs, 'Eval on real data.png'))
+    # plt.savefig(os.path.join(save_dir_abs, 'Eval on real data.png'))
+    plt.show()
     plt.close()
 
     return test_loss_clean, test_loss_noise
