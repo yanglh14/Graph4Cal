@@ -5,7 +5,7 @@ import os
 
 # list all folder names in the directory
 abs_dir = os.path.dirname(os.getcwd())
-source_dir = os.path.join(abs_dir, 'model/exp1-cfgs')
+source_dir = os.path.join(abs_dir, 'model/exp1-mlp')
 # folder_names = os.listdir(source_dir)
 folder_names = [item for item in os.listdir(source_dir) if os.path.isdir(os.path.join(source_dir, item))]
 
@@ -19,14 +19,13 @@ for folder in folder_names:
     current_dir_name = os.path.join(source_dir, folder)
     for i in range(4, 11):
         _loss = np.load(os.path.join(current_dir_name,'model_{}cables'.format(i), 'val_loss.npy'))
+
         if _loss.shape != ():
-            loss_list.append(_loss[-1])
+            loss_list.append(_loss[-1].round(5))
         else:
-            loss_list.append(_loss)
+            loss_list.append(_loss.round(5))
         # loss_list.append(np.load(os.path.join(current_dir_name,'model_{}cables'.format(i), 'val_loss.npy'))[-1])
     loss_table[folder] = loss_list
-
-
 
 # create the table
 table_data = []

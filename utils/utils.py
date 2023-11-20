@@ -90,7 +90,7 @@ def create_dataset_noise(num_features=7,folder = 'with_noise_0706/errrange_2', n
     data_path = 'c{}_data/c{}'.format(num_features,num_features)
 
     # Read data from CSV files
-    abs_data_path = os.path.join('/', 'data')
+    abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_cdprconf.csv'))
     feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList.csv'))
     feature_data_noise = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList_noise.csv'))
@@ -107,7 +107,7 @@ def create_dataset_noise(num_features=7,folder = 'with_noise_0706/errrange_2', n
                                    node_features,
                                    torch.zeros(node_features.shape[0], 1)], dim=1)
 
-    node_features = normalize_tensor(node_features,1000,batch_norm=False)
+    node_features = normalize_tensor(node_features,1,batch_norm=False)
 
     # Prepare target values (y)
     target_values = torch.tensor(feature_data[:, :3], dtype=torch.float)
@@ -116,7 +116,7 @@ def create_dataset_noise(num_features=7,folder = 'with_noise_0706/errrange_2', n
     # Prepare edge features
     edge_features = torch.tensor(edge_data, dtype=torch.float).view(-1, 3)
     edge_features = torch.cat([edge_features[::2], edge_features[1::2]], dim=0).view(2, -1, 3)
-    edge_features = normalize_tensor(edge_features,1000,batch_norm=False)
+    edge_features = normalize_tensor(edge_features,1,batch_norm=False)
 
     # Prepare edge indices
     edge_index1 = torch.tensor([[0] * num_features,
@@ -328,7 +328,7 @@ def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False
             data_path = 'file{}_measured_qlOriList.csv'.format(i)
 
         # Read data from CSV files
-        abs_data_path = os.path.join('/', 'data')
+        abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
         feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path ))
         feature_data_list.append(feature_data)
     feature_data = np.concatenate(feature_data_list,axis=0)

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 
 from utils.GraphNet import GraphNet
-
+from utils.utils import create_dataset_noise
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def train(num_cables = 8, noise = True):
