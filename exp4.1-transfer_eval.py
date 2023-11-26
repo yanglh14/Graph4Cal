@@ -30,7 +30,7 @@ def train(train_cables=4):
 
     for _noise in ['noise','clean']:
 
-        if _noise == True:
+        if _noise == 'noise':
             data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_5/',noise = True)
         else:
             data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_5/',noise = False)

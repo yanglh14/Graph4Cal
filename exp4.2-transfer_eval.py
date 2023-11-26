@@ -30,7 +30,7 @@ def train(train_cables=4):
 
     for _noise in ['noise','clean']:
 
-        if _noise == True:
+        if _noise == 'noise':
             data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = True)
         else:
             data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = False)

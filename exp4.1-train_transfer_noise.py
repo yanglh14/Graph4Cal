@@ -7,7 +7,6 @@ import os
 import pickle
 import torch
 import torch.nn as nn
-from exp1_train_finetune import train
 from ray import tune
 from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
@@ -26,7 +25,7 @@ def train(config, train_cables):
 
     for _noise in ['noise','clean']:
 
-        if _noise == True:
+        if _noise == 'noise':
             data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_5/',noise = True)
         else:
             data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_5/',noise = False)
@@ -160,5 +159,5 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
     print("Best trial loss saved at: {}".format(save_dir))
 
 if __name__ == '__main__':
-    for i in range(10,11): # from 7 cables: 100 samples, 456: 1000samples for noise 2; noise 5: on clean 6 cables 1000 samples
+    for i in range(4,11): # from 7 cables: 100 samples, 456: 1000samples for noise 2; noise 5: on clean 6 cables 1000 samples
         main(num_samples=300, max_num_epochs=1000, gpus_per_trial=1,num_cables=i)
