@@ -10,4 +10,6 @@ Note: 从measured traj. 可以发现，x,y_measured in [200,800]
 c4_euler_zlim-15  15deg：z轴的euler(i.e., theta)范围 \in [-15,15] deg
 c4_euler_zlim-25  25deg：z轴的euler(i.e., theta)范围 \in [-25,25] deg
 Note: 从measured traj. 可以发现，theta_measured in [-12,12] deg
+
+根据real exp setup在仿真器上搭建相应Config:ExpC4，之后随机采集100 traj. with 100 pt/traj.
  
