@@ -1,3 +1,6 @@
+# exp1_transfer_mlp_eval.py
+
+
 import matplotlib.pyplot as plt
 import pickle
 import torch
@@ -109,7 +112,7 @@ def train(train_cables=4, eval_cables=5):
     for input, label in test_loader:
         input = input.to(device)
         label = label.to(device)
-
+        # time cost for FK solver
         out = model(input)
         loss = torch.sqrt(loss_fn(out, label))
 

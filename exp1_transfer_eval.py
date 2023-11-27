@@ -44,6 +44,7 @@ def train(train_cables=4, eval_cables=5):
     total_num = 0
     for data in test_loader:
         data = data.to(device)
+        # time cost of FK solver
         out = model(data.x, data.edge_index, data.edge_features)
         loss = torch.sqrt(loss_fn(out, data.y.view(-1, 3)))
 
