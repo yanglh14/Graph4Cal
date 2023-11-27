@@ -93,13 +93,22 @@ def train(train_cables=4):
     ax = fig.add_subplot(111, projection='3d')
     # ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='o', label='prediction')
     # ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', label='target')
-    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='.', s=10, label='KmGNN')
-    ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', s=5, label='Reference')
+    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='.', s=5, label='KmGNN')
+    ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='.', s=5, label='Reference')
     # set axis limits
     ax.set_xlim([0,1])
     ax.set_ylim([0,1])
     ax.set_zlim([0,1])
-    ax.legend(fontsize=25)
+    # Get the legend object
+    leg = ax.legend()
+    # Set the marker size in the legend
+    for handle in leg.legendHandles:
+        handle.set_sizes([100])  # Adjust the marker size as desired
+    # Set the font size in the legend
+    for text in leg.get_texts():
+        text.set_fontsize(25)  # Adjust the font size as desired
+    # ax.legend(fontsize=25)
+
     ax.set_xlabel('x (m)', fontsize=25)
     ax.set_ylabel('y (m)', fontsize=25)
     ax.set_zlabel('z (m)', fontsize=25)
