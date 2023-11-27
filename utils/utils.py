@@ -90,7 +90,9 @@ def create_dataset_noise(num_features=7,folder = 'with_noise_0706/errrange_2', n
     data_path = 'c{}_data/c{}'.format(num_features,num_features)
 
     # Read data from CSV files
-    abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
+    # abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
+    repo_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    abs_data_path = os.path.join(repo_dir, 'data')
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_cdprconf.csv'))
     feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList.csv'))
     feature_data_noise = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path + '_qlList_noise.csv'))
@@ -328,7 +330,9 @@ def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False
             data_path = 'file{}_measured_qlOriList.csv'.format(i)
 
         # Read data from CSV files
-        abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
+        # abs_data_path = os.path.join('/home/yang/Projects/Graph4Cal', 'data')
+        repo_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        abs_data_path = os.path.join(repo_dir, 'data')
         feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path ))
         feature_data_list.append(feature_data)
     feature_data = np.concatenate(feature_data_list,axis=0)
