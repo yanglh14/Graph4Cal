@@ -16,7 +16,7 @@ plt.rcParams['font.sans-serif'] = 'Arial'
 plt.rcParams['font.style'] = 'normal'
 
 ### create save directory
-save_dir = 'model/exp5-sim2real/transfer_results'
+save_dir = 'model/exp5-sim2real/transfer_results_largeDataset'
 save_dir_abs = os.path.join(os.getcwd(), save_dir)
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
@@ -31,9 +31,9 @@ def train(train_cables=4):
     for _noise in ['noise','clean']:
 
         if _noise == 'noise':
-            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = True)
+            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = True, sim_data=True)
         else:
-            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = False)
+            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = False, sim_data=True)
 
         num_data = len(data_list)
 
@@ -45,7 +45,7 @@ def train(train_cables=4):
         test_loader_list[_noise] = test_loader
         val_loader_list[_noise] = val_loader
 
-    source_dir = 'model/exp5-sim2real/sim2real'
+    source_dir = 'model/exp5-sim2real/sim2real_largeData'
 
     #load cfg
     with open(os.path.join(source_dir, 'best_config{}.pkl'.format(train_cables)), 'rb') as f:

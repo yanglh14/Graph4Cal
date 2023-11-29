@@ -26,9 +26,9 @@ def train(config, train_cables):
     for _noise in ['noise','clean']:
 
         if _noise == 'noise':
-            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_5/',noise = True)
+            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_10/',noise = True)
         else:
-            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_5/',noise = False)
+            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_10/',noise = False)
 
         num_data = len(data_list)
 
@@ -143,7 +143,7 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
         best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    save_dir = os.path.join(os.getcwd(),"model/exp4-noise/noise_5_training_on_noise")
+    save_dir = os.path.join(os.getcwd(),"model/exp4-noise/noise_10_training_on_noise")
     os.makedirs(save_dir, exist_ok=True)
     torch.save(best_trained_model.state_dict(), os.path.join(save_dir,"best_model_finetune{}.pth".format(num_cables)))
     print("Best trial model saved at: {}".format(save_dir))

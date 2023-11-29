@@ -319,7 +319,7 @@ def quaternion_multiply(q1, q2):
 
     return result
 
-def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False):
+def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False, sim_data=False):
     # Choose the correct data folder based on num_features
     feature_data_list = []
     for i in range(6):
@@ -335,7 +335,12 @@ def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False
         abs_data_path = os.path.join(repo_dir, 'data')
         feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, data_path ))
         feature_data_list.append(feature_data)
+
     feature_data = np.concatenate(feature_data_list,axis=0)
+    if sim_data and not noise:
+        sim_data = load_sim_data(abs_data_path)
+        feature_data = np.concatenate([feature_data,sim_data],axis=0)
+
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, 'exp_cdprconf.csv'))
 
     # Prepare node features (x)
@@ -374,6 +379,11 @@ def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False
         data_list.append(data)
 
     return data_list
+
+def load_sim_data(abs_data_path):
+
+    feature_data = read_csv_to_numpy_array(os.path.join(abs_data_path, 'sim2real/c4_data', 'c4_qlOriList.csv'))
+    return feature_data
 
 if __name__=='__main__':
     data = create_dataset()
