@@ -15,8 +15,9 @@ plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = 'Arial'
 plt.rcParams['font.style'] = 'normal'
 
+noise_range = 10
 ### create save directory
-save_dir = 'model/exp4-noise/transfer_results_noise10'
+save_dir = 'model/exp4-noise/transfer_results_noise{}'.format(noise_range)
 save_dir_abs = os.path.join(os.getcwd(), save_dir)
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
@@ -31,9 +32,9 @@ def train(train_cables=4):
     for _noise in ['noise','clean']:
 
         if _noise == 'noise':
-            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_10/',noise = True)
+            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_{}/'.format(noise_range),noise = True)
         else:
-            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_10/',noise = False)
+            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_{}/'.format(noise_range),noise = False)
 
         num_data = len(data_list)
 
@@ -45,7 +46,7 @@ def train(train_cables=4):
         test_loader_list[_noise] = test_loader
         val_loader_list[_noise] = val_loader
 
-    source_dir = 'model/exp4-noise/noise_10_training_on_clean'
+    source_dir = 'model/exp4-noise/noise_{}_training_on_clean'.format(noise_range)
 
     #load cfg
     with open(os.path.join(source_dir, 'best_config{}.pkl'.format(train_cables)), 'rb') as f:
@@ -88,7 +89,7 @@ if __name__ == '__main__':
         test_loss_clean, test_loss_noise = train(train_cables=i)
         test_loss_list[i,0] = test_loss_clean
         test_loss_list[i,1] = test_loss_noise
-        test_loss_list[i,2] = np.load(os.path.join('model/exp4-noise/noise_10_training_on_noise', 'best_loss{}.npy'.format(i)))
+        test_loss_list[i,2] = np.load(os.path.join('model/exp4-noise/noise_{}_training_on_noise'.format(noise_range), 'best_loss{}.npy'.format(i)))
 
 
     np.save(os.path.join(save_dir_abs, 'transfer_loss_table.npy'), test_loss_list)

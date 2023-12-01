@@ -339,7 +339,8 @@ def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False
     feature_data = np.concatenate(feature_data_list,axis=0)
     if sim_data and not noise:
         sim_data = load_sim_data(abs_data_path)
-        feature_data = np.concatenate([feature_data,sim_data],axis=0)
+        # feature_data = np.concatenate([feature_data,sim_data],axis=0)
+        feature_data = sim_data
 
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, 'exp_cdprconf.csv'))
 

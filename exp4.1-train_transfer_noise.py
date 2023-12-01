@@ -13,6 +13,7 @@ from ray.tune.schedulers import ASHAScheduler
 from utils.GraphNet import GraphNet
 
 best_loss = float("inf")  # Initialize best_loss as positive infinity
+noise_range = 5
 
 def train(config, train_cables):
 
@@ -26,9 +27,9 @@ def train(config, train_cables):
     for _noise in ['noise','clean']:
 
         if _noise == 'noise':
-            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_10/',noise = True)
+            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_{}/'.format(noise_range),noise=True)
         else:
-            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_10/',noise = False)
+            data_list = create_dataset_noise(num_features=train_cables, folder='with_noise_0706/errrange_{}/'.format(noise_range),noise=False)
 
         num_data = len(data_list)
 
@@ -55,7 +56,7 @@ def train(config, train_cables):
         total_loss = 0
         total_num = 0
 
-        for data in train_loader_list['noise']:
+        for data in train_loader_list['clean']:
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.edge_features,current_cable=train_cables)
@@ -143,7 +144,7 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
         best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    save_dir = os.path.join(os.getcwd(),"model/exp4-noise/noise_10_training_on_noise")
+    save_dir = os.path.join(os.getcwd(),"model/exp4-noise/noise_{}_training_on_clean".format(noise_range))
     os.makedirs(save_dir, exist_ok=True)
     torch.save(best_trained_model.state_dict(), os.path.join(save_dir,"best_model_finetune{}.pth".format(num_cables)))
     print("Best trial model saved at: {}".format(save_dir))
@@ -159,5 +160,5 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
     print("Best trial loss saved at: {}".format(save_dir))
 
 if __name__ == '__main__':
-    for i in range(4,11): # from 7 cables: 100 samples, 456: 1000samples for noise 2; noise 5: on clean 6 cables 1000 samples
-        main(num_samples=300, max_num_epochs=1000, gpus_per_trial=1,num_cables=i)
+    for i in range(10,11): # from 7 cables: 100 samples, 456: 1000samples for noise 2; noise 5: on clean 6 cables 1000 samples
+        main(num_samples=1000, max_num_epochs=500, gpus_per_trial=1,num_cables=i)

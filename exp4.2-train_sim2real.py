@@ -144,7 +144,7 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
         best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    save_dir = os.path.join(os.getcwd(),"model/exp5-sim2real/sim2real_largeData")
+    save_dir = os.path.join(os.getcwd(),"model/exp5-sim2real/sim2real_onlysim2real")
     os.makedirs(save_dir, exist_ok=True)
     torch.save(best_trained_model.state_dict(), os.path.join(save_dir,"best_model_finetune{}.pth".format(num_cables)))
     print("Best trial model saved at: {}".format(save_dir))
