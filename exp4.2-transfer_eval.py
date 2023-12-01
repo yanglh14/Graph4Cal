@@ -83,11 +83,21 @@ def train(train_cables=4):
     for data in val_loader_list['noise']:
         data = data.to(device)
         out = model(data.x, data.edge_index, data.edge_features,current_cable=train_cables)
+        y_L = data.y.view(-1, 3)[:459,:]
+        loss_L = torch.sqrt(loss_fn(out[:459,:], y_L))
+        print(f'loss_L: {loss_L}') # linear traj. up to 459-th (real data # 3125)
+
+        y_C = data.y.view(-1, 3)[459:,:]
+        loss_C = torch.sqrt(loss_fn(out[459:,:], y_C))
+        print(f'loss_C: {loss_C}') # circular traj. from 459-th (real data # 3125)
+
         loss = torch.sqrt(loss_fn(out, data.y.view(-1, 3)))
-        print(loss)
+        print(f'loss: {loss}')
         break
 
     y = data.y.view(-1,3).cpu().detach().numpy()
+    print(y.shape) # real(3125, 3) + (sim(10k, 3) if sim_data=True else 0)
+    stop_bar = 459 # linear traj. up to 459-th (real data # 3125)
 
     fig = plt.figure(figsize=(10,10))
     ax = fig.add_subplot(111, projection='3d')
