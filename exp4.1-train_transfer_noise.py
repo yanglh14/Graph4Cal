@@ -56,7 +56,7 @@ def train(config, train_cables):
         total_loss = 0
         total_num = 0
 
-        for data in train_loader_list['clean']:
+        for data in train_loader_list['noise']:
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.edge_features,current_cable=train_cables)
@@ -144,7 +144,7 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
         best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    save_dir = os.path.join(os.getcwd(),"model/exp4-noise/noise_{}_training_on_clean".format(noise_range))
+    save_dir = os.path.join(os.getcwd(),"model/exp4-noise/noise_{}_training_on_noise".format(noise_range))
     os.makedirs(save_dir, exist_ok=True)
     torch.save(best_trained_model.state_dict(), os.path.join(save_dir,"best_model_finetune{}.pth".format(num_cables)))
     print("Best trial model saved at: {}".format(save_dir))
@@ -161,4 +161,4 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
 
 if __name__ == '__main__':
     for i in range(10,11): # from 7 cables: 100 samples, 456: 1000samples for noise 2; noise 5: on clean 6 cables 1000 samples
-        main(num_samples=1000, max_num_epochs=500, gpus_per_trial=1,num_cables=i)
+        main(num_samples=100, max_num_epochs=2000, gpus_per_trial=1,num_cables=i)

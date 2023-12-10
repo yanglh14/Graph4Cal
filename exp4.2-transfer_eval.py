@@ -15,13 +15,8 @@ plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = 'Arial'
 plt.rcParams['font.style'] = 'normal'
 
-### create save directory
-save_dir = 'model/exp5-sim2real/transfer_results_onlysim2real'
-save_dir_abs = os.path.join(os.getcwd(), save_dir)
-if not os.path.exists(save_dir):
-    os.mkdir(save_dir)
 
-def train(train_cables=4):
+def train(train_cables=4, exp_name='sim2real'):
 
     ### create dataset
     train_loader_list = {}
@@ -31,9 +26,9 @@ def train(train_cables=4):
     for _noise in ['noise','clean']:
 
         if _noise == 'noise':
-            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = True, sim_data=True)
+            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data', noise=True, exp_name=exp_name)
         else:
-            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data',noise = False, sim_data=True)
+            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data', noise=False, exp_name=exp_name)
 
         num_data = len(data_list)
 
@@ -45,7 +40,7 @@ def train(train_cables=4):
         test_loader_list[_noise] = test_loader
         val_loader_list[_noise] = val_loader
 
-    source_dir = 'model/exp5-sim2real/sim2real_onlysim2real'
+    source_dir = 'model/exp5-sim2real/'+exp_name
 
     #load cfg
     with open(os.path.join(source_dir, 'best_config{}.pkl'.format(train_cables)), 'rb') as f:
@@ -69,6 +64,8 @@ def train(train_cables=4):
         total_num += data.num_graphs
     test_loss_clean= total_loss / total_num
 
+    total_loss = 0
+    total_num = 0
     for data in test_loader_list['noise']:
         data = data.to(device)
         out = model(data.x, data.edge_index, data.edge_features,current_cable=train_cables)
@@ -126,27 +123,35 @@ def train(train_cables=4):
     plt.tight_layout()
     # save fig
     # plt.savefig(os.path.join(save_dir_abs, 'Eval on real data.png'))
-    plt.show()
+    # plt.show()
     plt.close()
 
     return test_loss_clean, test_loss_noise
 
 if __name__ == '__main__':
-    test_loss_list = np.zeros((11,3))
-    for i in range(4, 5):
-        test_loss_clean, test_loss_noise = train(train_cables=i)
+
+    exp_names = ['sim2real', 'real2real','sim_real2real']
+
+    ### create save directory
+    save_dir = 'model/exp5-sim2real/transfer_sim2real'
+    save_dir_abs = os.path.join(os.getcwd(), save_dir)
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+    table_data =[]
+    for i, exp_name in enumerate(exp_names):
+
+        test_loss_list = np.zeros((11,3))
+
+        test_loss_clean, test_loss_noise = train(train_cables=4, exp_name=exp_name)
         test_loss_list[i,0] = test_loss_clean
         test_loss_list[i,1] = test_loss_noise
         test_loss_list[i,2] = 0
+        test_loss_list = np.round(test_loss_list, 4)
 
+        table_data.append([exp_name, test_loss_list[i, 0], test_loss_list[i, 1], test_loss_list[i, 2]])
 
     np.save(os.path.join(save_dir_abs, 'transfer_loss_table.npy'), test_loss_list)
 
-    test_loss_list = np.round(test_loss_list, 4)
-
-    table_data = [
-        ["Training on 4 cables", test_loss_list[4, 0], test_loss_list[4, 1], test_loss_list[4, 2]],
-    ]
 
     headers = ["", "Eval on clean dataset", "Transfer to noise dataset", "Eval on noise dataset"]
 

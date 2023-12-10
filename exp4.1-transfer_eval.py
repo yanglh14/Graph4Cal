@@ -15,7 +15,7 @@ plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = 'Arial'
 plt.rcParams['font.style'] = 'normal'
 
-noise_range = 10
+noise_range = 5
 ### create save directory
 save_dir = 'model/exp4-noise/transfer_results_noise{}'.format(noise_range)
 save_dir_abs = os.path.join(os.getcwd(), save_dir)
@@ -70,6 +70,8 @@ def train(train_cables=4):
         total_num += data.num_graphs
     test_loss_clean= total_loss / total_num
 
+    total_loss = 0
+    total_num = 0
     for data in test_loader_list['noise']:
         data = data.to(device)
         out = model(data.x, data.edge_index, data.edge_features,current_cable=train_cables)

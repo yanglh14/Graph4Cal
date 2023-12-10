@@ -13,6 +13,7 @@ from ray.tune.schedulers import ASHAScheduler
 from utils.GraphNet import GraphNet
 
 best_loss = float("inf")  # Initialize best_loss as positive infinity
+exp_name = 'sim2real' # ['sim2real', 'real2real','sim_real2real']
 
 def train(config, train_cables):
 
@@ -26,9 +27,9 @@ def train(config, train_cables):
     for _noise in ['noise','clean']:
 
         if _noise == 'noise':
-            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data', noise = True, sim_data=True)
+            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data', noise=True, exp_name=exp_name)
         else:
-            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data', noise = False, sim_data=True)
+            data_list = create_dataset_real(num_features=train_cables, folder='sim2real/real_data', noise=False, exp_name=exp_name)
 
         num_data = len(data_list)
 
@@ -144,7 +145,7 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
         best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    save_dir = os.path.join(os.getcwd(),"model/exp5-sim2real/sim2real_onlysim2real")
+    save_dir = os.path.join(os.getcwd(),"model/exp5-sim2real/"+exp_name)
     os.makedirs(save_dir, exist_ok=True)
     torch.save(best_trained_model.state_dict(), os.path.join(save_dir,"best_model_finetune{}.pth".format(num_cables)))
     print("Best trial model saved at: {}".format(save_dir))
@@ -161,4 +162,4 @@ def main(num_samples=100, max_num_epochs=100, gpus_per_trial=1, num_cables=4):
 
 if __name__ == '__main__':
     for i in range(4,5): # from 7 cables: 100 samples, 456: 1000samples for noise 2; noise 5: on clean 6 cables 1000 samples
-        main(num_samples=300, max_num_epochs=300, gpus_per_trial=1,num_cables=i)
+        main(num_samples=100, max_num_epochs=100, gpus_per_trial=1,num_cables=i)

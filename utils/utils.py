@@ -319,7 +319,7 @@ def quaternion_multiply(q1, q2):
 
     return result
 
-def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False, sim_data=False):
+def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False, exp_name=None):
     # Choose the correct data folder based on num_features
     feature_data_list = []
     for i in range(6):
@@ -337,10 +337,18 @@ def create_dataset_real(num_features=4,folder='exp_data_0717/forGNN',noise=False
         feature_data_list.append(feature_data)
 
     feature_data = np.concatenate(feature_data_list,axis=0)
-    if sim_data and not noise:
-        sim_data = load_sim_data(abs_data_path)
-        # feature_data = np.concatenate([feature_data,sim_data],axis=0)
-        feature_data = sim_data
+    if not noise:
+        if exp_name == 'sim2real':
+
+            _sim_data = load_sim_data(abs_data_path)
+            feature_data = _sim_data
+
+        elif exp_name == 'sim_real2real':
+            _sim_data = load_sim_data(abs_data_path)
+            feature_data = np.concatenate([feature_data,_sim_data],axis=0)
+
+        elif exp_name == 'real2real':
+            pass
 
     edge_data = read_csv_to_numpy_array(os.path.join(abs_data_path, folder, 'exp_cdprconf.csv'))
 
