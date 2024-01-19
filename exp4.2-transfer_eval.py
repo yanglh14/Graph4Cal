@@ -113,23 +113,24 @@ def train(train_cables=4, exp_name='sim2real'):
     ax.set_ylim([0,1])
     ax.set_zlim([0,1])
     # Get the legend object
-    leg = ax.legend()
-    # Set the marker size in the legend
-    for handle in leg.legendHandles:
-        handle.set_sizes([100])  # Adjust the marker size as desired
-    # Set the font size in the legend
-    for text in leg.get_texts():
-        text.set_fontsize(25)  # Adjust the font size as desired
+    # leg = ax.legend()
+    # # Set the marker size in the legend
+    # for handle in leg.legendHandles:
+    #     handle.set_sizes([100])  # Adjust the marker size as desired
+    # # Set the font size in the legend
+    # for text in leg.get_texts():
+    #     text.set_fontsize(25)  # Adjust the font size as desired
     # ax.legend(fontsize=25)
 
     ax.set_xlabel('x (m)', fontsize=25)
     ax.set_ylabel('y (m)', fontsize=25)
     ax.set_zlabel('z (m)', fontsize=25)
+    ax.title.set_text(exp_name)
     ax.view_init(90,-90) #elev=20, azim=-160
     plt.tight_layout()
     # save fig
     # plt.savefig(os.path.join(save_dir_abs, 'Eval on real data.png'))
-    # plt.show()
+    plt.show()
     plt.close()
 
     return test_loss_clean, test_loss_noise
