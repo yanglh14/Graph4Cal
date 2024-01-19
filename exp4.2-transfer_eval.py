@@ -95,13 +95,19 @@ def train(train_cables=4, exp_name='sim2real'):
     y = data.y.view(-1,3).cpu().detach().numpy()
     print(y.shape) # real(3125, 3) + (sim(10k, 3) if sim_data=True else 0)
     stop_bar = 459 # linear traj. up to 459-th (real data # 3125)
+    circle_start = 459
+    circle_end = circle_start + 2206
+
+    # only plot half circle
+    y = y[stop_bar:circle_end,:]
+    out = out[stop_bar:circle_end,:]
 
     fig = plt.figure(figsize=(10,10))
     ax = fig.add_subplot(111, projection='3d')
     # ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='o', label='prediction')
     # ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='o', label='target')
-    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='.', s=5, label='KmGNN')
-    ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='.', s=5, label='Reference')
+    ax.scatter(out[:,0].cpu().detach().numpy(), out[:,1].cpu().detach().numpy(), out[:,2].cpu().detach().numpy(), c='r', marker='.', s=5, label='CafkNet')
+    ax.scatter(y[:,0], y[:,1], y[:,2], c='g', marker='.', s=5, label='Target')
     # set axis limits
     ax.set_xlim([0,1])
     ax.set_ylim([0,1])
