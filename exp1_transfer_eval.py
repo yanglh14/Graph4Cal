@@ -27,7 +27,7 @@ def train(train_cables=4, eval_cables=5):
     test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32,shuffle=True)
     val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
 
-    source_dir = 'model/exp1-one2one/model_finetune'
+    source_dir = 'model/exp1-one2one/model_finetune_'
 
     #load cfg
     with open(os.path.join(source_dir, 'best_config{}.pkl'.format(train_cables)), 'rb') as f:
