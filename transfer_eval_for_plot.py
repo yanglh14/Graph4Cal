@@ -18,7 +18,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 ### create save directory
-save_dir = 'model/exp1-cfgs/transfer_results'
+save_dir = 'model/exp1-one2one/transfer_results'
+
 save_dir_abs = os.path.join(os.getcwd(), save_dir)
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
@@ -33,7 +34,9 @@ def train(train_cables=4, eval_cables=5):
     test_loader = DataLoader(data_list[int(num_data*0.8):num_data-100], batch_size=32,shuffle=True)
     val_loader = DataLoader(data_list[num_data-100:], batch_size=100)
 
-    source_dir = 'model/exp1-cfgs/model_finetune_'
+    # source_dir = 'model/exp1-cfgs/model_finetune_'
+    ## one2one (GNN)
+    source_dir = 'model/exp1-one2one/model_finetune_'
 
     #load cfg
     with open(os.path.join(source_dir, 'best_config{}.pkl'.format(train_cables)), 'rb') as f:
@@ -75,17 +78,17 @@ def train(train_cables=4, eval_cables=5):
     ax.set_xlim([0,1])
     ax.set_ylim([0,1])
     ax.set_zlim([0,1])
-    ax.legend(fontsize=25)
+    # ax.legend(fontsize=25)
     ax.set_xlabel('x (m)', fontsize=25)
     ax.set_ylabel('y (m)', fontsize=25)
     ax.set_zlabel('z (m)', fontsize=25)
     ax.view_init(20,-160) #elev=20, azim=-160
     plt.tight_layout()
-    # plt.title('Train {}, Eval {} cables'.format(train_cables,eval_cables))
-    # plt.show()
+    plt.title('Train {}, Eval {} cables'.format(train_cables,eval_cables))
+    plt.show()
     ## save fig
-    save_dir_abs = 'D:/02data/OneDrive - The University of Hong Kong - Connect/B_Data/Personal/HKU/08SubPapers/202307-CDPR-GNN/fig/one2one'
-    plt.savefig(os.path.join(save_dir_abs, 'Eval_{}_to_{}.png'.format(train_cables, eval_cables)))
+    # save_dir_abs = 'D:/02data/OneDrive - The University of Hong Kong - Connect/B_Data/Personal/HKU/08SubPapers/202307-CDPR-GNN/fig/one2one'
+    # plt.savefig(os.path.join(save_dir_abs, 'Eval_{}_to_{}.png'.format(train_cables, eval_cables)))
     plt.close()
 
     # return test_loss
